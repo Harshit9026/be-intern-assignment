@@ -12,6 +12,10 @@ userRouter.get('/', userController.getAllUsers.bind(userController));
 // Get user by id
 userRouter.get('/:id', userController.getUserById.bind(userController));
 
+userRouter.get('/:id/followers', userController.getFollowers.bind(userController));
+
+userRouter.get('/:id/activity', userController.getActivity.bind(userController));
+
 // Create new user
 userRouter.post('/', validate(createUserSchema), userController.createUser.bind(userController));
 
