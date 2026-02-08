@@ -12,6 +12,8 @@ export class FeedController {
       const limit = parseInt(req.query.limit as string) || 10;
       const offset = parseInt(req.query.offset as string) || 0;
 
+      console.log('Feed request - userId:', userId, 'limit:', limit, 'offset:', offset);
+
       if (!userId) {
         return res.status(400).json({ message: 'userId is required' });
       }
@@ -24,9 +26,11 @@ export class FeedController {
       });
 
       const followingIds = follows.map((f) => f.following.id);
+      console.log('Following IDs:', followingIds);
 
-      /** ✅ FIX 1: If user follows no one, return empty feed */
+      /** If user follows no one, return empty feed */
       if (followingIds.length === 0) {
+        console.log('User follows no one, returning empty feed');
         return res.json([]);
       }
 
@@ -35,63 +39,92 @@ export class FeedController {
       const posts = await postRepo
         .createQueryBuilder('post')
         .leftJoinAndSelect('post.author', 'author')
-        .where('author.id IN (:...ids)', { ids: followingIds }) // ✅ FIX 2
+        .where('author.id IN (:...ids)', { ids: followingIds })
         .orderBy('post.createdAt', 'DESC')
         .skip(offset)
         .take(limit)
         .getMany();
 
+      console.log('Posts found:', posts.length);
+
       if (posts.length === 0) {
+        console.log('No posts found, returning empty feed');
         return res.json([]);
       }
 
       const postIds = posts.map((p) => p.id);
+      console.log('Post IDs:', postIds);
 
       /** 3️⃣ Get like counts */
       const likeRepo = AppDataSource.getRepository(Like);
       const likeCounts = await likeRepo
         .createQueryBuilder('like')
         .select('like.postId', 'postId')
-        .addSelect('COUNT(*)', 'count')
+        .addSelect('COUNT(like.id)', 'count')
         .where('like.postId IN (:...ids)', { ids: postIds })
         .groupBy('like.postId')
         .getRawMany();
 
+      console.log('Like counts raw data:', likeCounts);
+
       const likeMap = new Map<number, number>();
-      likeCounts.forEach((l) =>
-        likeMap.set(Number(l.postId), Number(l.count))
-      );
+      likeCounts.forEach((l) => {
+        const postId = Number(l.postId);
+        const count = Number(l.count);
+        likeMap.set(postId, count);
+        console.log(`Post ${postId} has ${count} likes`);
+      });
 
       /** 4️⃣ Get hashtags */
       const postHashtagRepo = AppDataSource.getRepository(PostHashtag);
       const hashtags = await postHashtagRepo
         .createQueryBuilder('ph')
-        .leftJoinAndSelect('ph.post', 'post')      // ✅ FIX 3
-        .leftJoinAndSelect('ph.hashtag', 'hashtag')
+        .innerJoinAndSelect('ph.post', 'post')
+        .innerJoinAndSelect('ph.hashtag', 'hashtag')
         .where('post.id IN (:...ids)', { ids: postIds })
         .getMany();
 
+      console.log('Hashtags found:', hashtags.length);
+
       const tagMap = new Map<number, string[]>();
       hashtags.forEach((h) => {
+        if (!h.post || !h.hashtag) {
+          console.log('Warning: Missing post or hashtag relation', h);
+          return;
+        }
         const arr = tagMap.get(h.post.id) || [];
         arr.push(h.hashtag.tag);
         tagMap.set(h.post.id, arr);
       });
 
+      console.log('Hashtag map:', Array.from(tagMap.entries()));
+
       /** 5️⃣ Build final response */
       const response = posts.map((p) => ({
         id: p.id,
         content: p.content,
-        author: p.author,
+        author: {
+          id: p.author.id,
+          firstName: p.author.firstName,
+          lastName: p.author.lastName,
+          email: p.author.email,
+        },
         likeCount: likeMap.get(p.id) || 0,
         hashtags: tagMap.get(p.id) || [],
         createdAt: p.createdAt,
       }));
 
+      console.log('Final response length:', response.length);
+      console.log('Sample response:', JSON.stringify(response[0], null, 2));
+
       return res.json(response);
     } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: 'Error fetching feed' });
+      console.error('Error in getFeed:', error);
+      const dbError = error as any;
+      return res.status(500).json({ 
+        message: 'Error fetching feed',
+        error: dbError.message || 'Unknown error'
+      });
     }
   }
 }

@@ -21,7 +21,7 @@ import { PostHashtag } from './entities/PostHashtag';
 export const AppDataSource = new DataSource({
   type: 'sqlite',
   database: 'database.sqlite',
-  synchronize: true,
+  synchronize: false,
   logging: true,
   entities: [
     User,
