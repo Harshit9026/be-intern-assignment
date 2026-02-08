@@ -1,15 +1,17 @@
 import { Router } from 'express';
 import { HashtagController } from '../controllers/hashtag.controller';
-import { validate } from '../middleware/validation.middleware';
-import { addHashtagsToPostSchema } from '../validations/hashtagValidation';
 
-const hashtagRoutes = Router();
-const controller = new HashtagController();
+const router = Router();
+const hashtagController = new HashtagController();
 
-// Add hashtags to a post - with validation
-hashtagRoutes.post('/post', validate(addHashtagsToPostSchema), controller.addHashtagsToPost.bind(controller));
+// POST /api/hashtags/post - Add hashtags to a post
+router.post('/post', async (req, res) => {
+  await hashtagController.addHashtagsToPost(req, res);
+});
 
-// Get posts by hashtag - no validation needed for GET
-hashtagRoutes.get('/:tag', controller.getPostsByHashtag.bind(controller));
+// GET /api/hashtags/:tag/posts - Get posts by hashtag
+router.get('/:tag/posts', async (req, res) => {
+  await hashtagController.getPostsByHashtag(req, res);
+});
 
-export default hashtagRoutes;
+export default router;

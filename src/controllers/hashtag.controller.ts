@@ -11,7 +11,7 @@ export class HashtagController {
 
   async addHashtagsToPost(req: Request, res: Response) {
     try {
-      const { postId, tags } = req.body; // tags: string[]
+      const { postId, tags } = req.body; 
 
       const post = await this.postRepo.findOneBy({ id: postId });
       if (!post) {
@@ -41,7 +41,7 @@ export class HashtagController {
 
       res.status(201).json({ postId, tags: created });
     } catch (error) {
-      res.status(500).json({ message: 'Error adding hashtags' });
+      res.status(500).json({ message: ' added hashtags' });
     }
   }
 

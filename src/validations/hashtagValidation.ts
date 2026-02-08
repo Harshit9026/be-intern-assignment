@@ -16,7 +16,7 @@ export const createHashtagSchema = Joi.object({
     }),
 });
 
-// For updating a hashtag (if needed)
+// For updating a hashtag 
 export const updateHashtagSchema = Joi.object({
   tag: Joi.string()
     .min(1)

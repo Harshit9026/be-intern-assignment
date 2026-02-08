@@ -18,7 +18,7 @@ export class FeedController {
         return res.status(400).json({ message: 'userId is required' });
       }
 
-      /** 1️⃣ Get users that current user follows */
+     /* Get users that current user follows */
       const followRepo = AppDataSource.getRepository(Follow);
       const follows = await followRepo.find({
         where: { follower: { id: userId } },
@@ -34,7 +34,7 @@ export class FeedController {
         return res.json([]);
       }
 
-      /** 2️⃣ Get posts from followed users */
+      /**  Get posts from followed users */
       const postRepo = AppDataSource.getRepository(Post);
       const posts = await postRepo
         .createQueryBuilder('post')
@@ -55,7 +55,7 @@ export class FeedController {
       const postIds = posts.map((p) => p.id);
       console.log('Post IDs:', postIds);
 
-      /** 3️⃣ Get like counts */
+      /* Get like counts */
       const likeRepo = AppDataSource.getRepository(Like);
       const likeCounts = await likeRepo
         .createQueryBuilder('like')
@@ -75,7 +75,7 @@ export class FeedController {
         console.log(`Post ${postId} has ${count} likes`);
       });
 
-      /** 4️⃣ Get hashtags */
+      /* Get hashtags */
       const postHashtagRepo = AppDataSource.getRepository(PostHashtag);
       const hashtags = await postHashtagRepo
         .createQueryBuilder('ph')
@@ -99,7 +99,7 @@ export class FeedController {
 
       console.log('Hashtag map:', Array.from(tagMap.entries()));
 
-      /** 5️⃣ Build final response */
+      /* Build final response */
       const response = posts.map((p) => ({
         id: p.id,
         content: p.content,

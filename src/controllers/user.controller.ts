@@ -11,9 +11,6 @@ export class UserController {
   private postRepository = AppDataSource.getRepository(Post);
   private likeRepository = AppDataSource.getRepository(Like);
 
-  // =====================
-  // USER CRUD
-  // =====================
 
   async getAllUsers(req: Request, res: Response) {
     try {
@@ -107,7 +104,7 @@ export class UserController {
 
     const result = await this.userRepository.save(user);
 
-    console.log('✅ SUCCESS! User saved with ID:', result.id);
+    console.log(' SUCCESS! User saved with ID:', result.id);
 
     return res.status(201).json({
       message: 'User created successfully',
@@ -115,7 +112,7 @@ export class UserController {
     });
 
   } catch (error) {
-    console.error('❌ EXCEPTION in createUser:', error);
+    console.error(' EXCEPTION in createUser:', error);
     const dbError = error as any;
 
     // Handle unique constraint violation
@@ -198,7 +195,7 @@ export class UserController {
       const result = await this.userRepository.delete(userId);
 
       if (result.affected === 0) {
-        return res.status(404).json({ message: 'User not found' });
+        return res.status(404).json({ message: 'User deleted successfully' });
       }
 
       res.status(200).json({ 
@@ -215,10 +212,7 @@ export class UserController {
     }
   }
 
-  // =====================
-  // FOLLOWERS LIST API
-  // GET /api/users/:id/followers
-  // =====================
+
 
   async getFollowers(req: Request, res: Response) {
     try {
@@ -267,10 +261,7 @@ export class UserController {
     }
   }
 
-  // =====================
-  // USER ACTIVITY API
-  // GET /api/users/:id/activity
-  // =====================
+
 
   async getActivity(req: Request, res: Response) {
     try {

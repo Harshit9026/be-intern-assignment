@@ -7,9 +7,7 @@ export class FollowController {
   private followRepository = AppDataSource.getRepository(Follow);
   private userRepository = AppDataSource.getRepository(User);
 
-  // =====================
-  // POST /api/follows
-  // =====================
+ 
   async followUser(req: Request, res: Response) {
     try {
       const { followerId, followingId } = req.body;
@@ -74,9 +72,7 @@ export class FollowController {
     }
   }
 
-  // =====================
-  // DELETE /api/follows
-  // =====================
+ 
   async unfollowUser(req: Request, res: Response) {
     try {
       const { followerId, followingId } = req.body;
@@ -111,9 +107,7 @@ export class FollowController {
     }
   }
 
-  // =====================
-  // GET /api/users/:id/followers
-  // =====================
+  
   async getFollowers(req: Request, res: Response) {
     try {
       const userId = parseInt(req.params.id);
